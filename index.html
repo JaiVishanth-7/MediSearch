@@ -1,82 +1,151 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Medicine Details</title>
+  <title>MediSearch – Medicine Details</title>
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
 <body>
 
+  <!-- Dark Mode Toggle -->
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+    <i class="fa-solid fa-moon" id="themeIcon"></i>
+  </button>
+
   <header>
-    <div class="logo"><i class="fa-solid fa-kit-medical"></i> MediSearch</div>
-    <p class="tagline">Search detailed information for any medicine</p>
+    <div class="logo">
+      <span class="pill-icon">💊</span> MediSearch
+    </div>
+    <p class="tagline">Your intelligent medicine information companion</p>
+
+    <!-- Search -->
+    <div class="search-wrapper">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="medInput" placeholder="Search medicine (e.g. Ibuprofen, Aspirin)..." autocomplete="off"/>
+        <button onclick="searchMedicine()">Search</button>
+      </div>
+      <!-- Search History -->
+      <div id="historyBar" class="history-bar hidden"></div>
+    </div>
   </header>
 
   <main>
-    <div class="search-box">
-      <input type="text" id="medInput" placeholder="Enter medicine name (e.g. Ibuprofen, Aspirin)..." />
-      <button onclick="searchMedicine()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    <div id="error" class="error hidden">
+      <i class="fa-solid fa-circle-xmark"></i> <span id="errorText"></span>
     </div>
 
-    <div id="error" class="error hidden"></div>
-    <div id="loader" class="loader hidden"><i class="fa-solid fa-spinner fa-spin"></i> Fetching medicine data...</div>
+    <!-- Animated Pill Loader -->
+    <div id="loader" class="loader hidden">
+      <div class="pill-loader">
+        <div class="pill-half left"></div>
+        <div class="pill-half right"></div>
+      </div>
+      <p>Fetching medicine data...</p>
+    </div>
 
     <div id="results" class="hidden">
 
+      <!-- Medicine Header -->
       <div class="medicine-header">
-        <h2 id="medName"></h2>
-        <span id="medBrand" class="badge"></span>
+        <div class="med-title-group">
+          <h2 id="medName"></h2>
+          <div class="badges">
+            <span id="medBrand" class="badge brand-badge"></span>
+            <span id="rxBadge" class="badge rx-badge"></span>
+            <span id="routeBadge" class="badge route-badge"></span>
+          </div>
+        </div>
+        <div class="safety-meter-wrap">
+          <p class="safety-label">Safety Indicator</p>
+          <div class="safety-bar">
+            <div class="safety-fill" id="safetyFill"></div>
+          </div>
+          <p class="safety-text" id="safetyText"></p>
+        </div>
       </div>
 
+      <!-- Cards Grid -->
       <div class="cards-grid">
 
-        <div class="card">
-          <h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3>
+        <div class="card card-blue" style="--i:0">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3>
+            <button class="copy-btn" onclick="copyCard('purpose')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="purpose"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3>
+        <div class="card card-green" style="--i:1">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3>
+            <button class="copy-btn" onclick="copyCard('dosage')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="dosage"></p>
         </div>
 
-        <div class="card warning-card">
-          <h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3>
+        <div class="card card-orange" style="--i:2">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3>
+            <button class="copy-btn" onclick="copyCard('warnings')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="warnings"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3>
+        <div class="card card-red" style="--i:3">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3>
+            <button class="copy-btn" onclick="copyCard('sideEffects')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="sideEffects"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-ban"></i> Contraindications</h3>
+        <div class="card card-purple" style="--i:4">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-ban"></i> Contraindications</h3>
+            <button class="copy-btn" onclick="copyCard('contraindications')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="contraindications"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3>
+        <div class="card card-teal" style="--i:5">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3>
+            <button class="copy-btn" onclick="copyCard('precautions')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="precautions"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3>
+        <div class="card card-blue" style="--i:6">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3>
+            <button class="copy-btn" onclick="copyCard('storage')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="storage"></p>
         </div>
 
-        <div class="card">
-          <h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3>
+        <div class="card card-green" style="--i:7">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3>
+            <button class="copy-btn" onclick="copyCard('manufacturer')"><i class="fa-regular fa-copy"></i></button>
+          </div>
           <p id="manufacturer"></p>
         </div>
 
       </div>
 
-      <p class="disclaimer">⚠️ This information is for educational purposes only. Always consult a licensed physician before taking any medication.</p>
+      <div class="disclaimer">
+        <i class="fa-solid fa-stethoscope"></i>
+        This information is sourced from the <strong>U.S. FDA OpenData</strong> and is for <strong>educational purposes only</strong>. Always consult a licensed physician before taking any medication.
+      </div>
+
     </div>
   </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden">✅ Copied to clipboard!</div>
 
   <script src="js/medicine.js"></script>
 </body>
