@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #f0f4f8;
+  color: #2d3748;
+  min-height: 100vh;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg, #1a365d, #2b6cb0);
+  color: white;
+  text-align: center;
+  padding: 32px 20px 24px;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.logo i { color: #90cdf4; }
+
+.tagline {
+  font-size: 0.95rem;
+  color: #bee3f8;
+}
+
+/* Search */
+main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 14px 18px;
+  border: 2px solid #bee3f8;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+  transition: border 0.2s;
+}
+
+.search-box input:focus { border-color: #2b6cb0; }
+
+.search-box button {
+  padding: 14px 22px;
+  background: #2b6cb0;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.search-box button:hover { background: #1a365d; }
+
+/* States */
+.hidden { display: none; }
+
+.error {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.loader {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #2b6cb0;
+  padding: 30px;
+}
+
+/* Medicine Header */
+.medicine-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.medicine-header h2 {
+  font-size: 1.8rem;
+  color: #1a365d;
+}
+
+.badge {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border: 1px solid #bee3f8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  border-left: 4px solid #2b6cb0;
+}
+
+.warning-card { border-left-color: #dd6b20; }
+
+.card h3 {
+  font-size: 0.95rem;
+  color: #4a5568;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card h3 i { color: #2b6cb0; }
+.warning-card h3 i { color: #dd6b20; }
+
+.card p {
+  font-size: 0.9rem;
+  color: #4a5568;
+  line-height: 1.7;
+}
+
+/* Disclaimer */
+.disclaimer {
+  background: #fffbeb;
+  border: 1px solid #f6e05e;
+  color: #744210;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .search-box { flex-direction: column; }
+  .medicine-header h2 { font-size: 1.4rem; }
+}

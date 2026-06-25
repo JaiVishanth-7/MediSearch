@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medicine Details</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <header>
+    <div class="logo"><i class="fa-solid fa-kit-medical"></i> MediSearch</div>
+    <p class="tagline">Search detailed information for any medicine</p>
+  </header>
+
+  <main>
+    <div class="search-box">
+      <input type="text" id="medInput" placeholder="Enter medicine name (e.g. Ibuprofen, Aspirin)..." />
+      <button onclick="searchMedicine()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+    </div>
+
+    <div id="error" class="error hidden"></div>
+    <div id="loader" class="loader hidden"><i class="fa-solid fa-spinner fa-spin"></i> Fetching medicine data...</div>
+
+    <div id="results" class="hidden">
+
+      <div class="medicine-header">
+        <h2 id="medName"></h2>
+        <span id="medBrand" class="badge"></span>
+      </div>
+
+      <div class="cards-grid">
+
+        <div class="card">
+          <h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3>
+          <p id="purpose"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3>
+          <p id="dosage"></p>
+        </div>
+
+        <div class="card warning-card">
+          <h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3>
+          <p id="warnings"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3>
+          <p id="sideEffects"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-ban"></i> Contraindications</h3>
+          <p id="contraindications"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3>
+          <p id="precautions"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3>
+          <p id="storage"></p>
+        </div>
+
+        <div class="card">
+          <h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3>
+          <p id="manufacturer"></p>
+        </div>
+
+      </div>
+
+      <p class="disclaimer">⚠️ This information is for educational purposes only. Always consult a licensed physician before taking any medication.</p>
+    </div>
+  </main>
+
+  <script src="js/medicine.js"></script>
+</body>
+</html>
