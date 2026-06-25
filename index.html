@@ -9,35 +9,141 @@
 </head>
 <body>
 
-  <!-- Dark Mode Toggle -->
+  <!-- Theme Toggle -->
   <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
     <i class="fa-solid fa-moon" id="themeIcon"></i>
   </button>
 
+  <!-- ===== HEADER ===== -->
   <header>
-    <div class="logo">
-      <span class="pill-icon">💊</span> MediSearch
-    </div>
+    <div class="logo"><span class="pill-icon">💊</span> MediSearch</div>
     <p class="tagline">Your intelligent medicine information companion</p>
 
     <!-- Search -->
     <div class="search-wrapper">
-      <div class="search-box">
+      <div class="search-box" id="searchBox">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-        <input type="text" id="medInput" placeholder="Search medicine (e.g. Ibuprofen, Aspirin)..." autocomplete="off"/>
+        <input type="text" id="medInput"
+          placeholder="Search medicine (e.g. Ibuprofen, Aspirin)..."
+          autocomplete="off"
+          oninput="onTyping()"
+          onkeydown="onKeyDown(event)" />
         <button onclick="searchMedicine()">Search</button>
       </div>
-      <!-- Search History -->
+
+      <!-- Autocomplete Dropdown -->
+      <ul id="autocompleteList" class="autocomplete-list hidden"></ul>
+
+      <!-- History Bar -->
       <div id="historyBar" class="history-bar hidden"></div>
+    </div>
+
+    <!-- Health Tip Ticker -->
+    <div class="tip-ticker">
+      <span class="tip-label"><i class="fa-solid fa-lightbulb"></i> Tip:</span>
+      <span id="tipText" class="tip-text"></span>
     </div>
   </header>
 
+  <!-- ===== MAIN ===== -->
   <main>
+
+    <!-- ===== HOMEPAGE (shown before any search) ===== -->
+    <div id="homepage">
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <i class="fa-solid fa-database"></i>
+          <div><strong>100,000+</strong><span>FDA Drug Records</span></div>
+        </div>
+        <div class="stat-card">
+          <i class="fa-solid fa-flask"></i>
+          <div><strong>Free</strong><span>No API Key Needed</span></div>
+        </div>
+        <div class="stat-card">
+          <i class="fa-solid fa-bolt"></i>
+          <div><strong>Instant</strong><span>Real-time Data</span></div>
+        </div>
+        <div class="stat-card">
+          <i class="fa-solid fa-shield-halved"></i>
+          <div><strong>Trusted</strong><span>FDA OpenData Source</span></div>
+        </div>
+      </div>
+
+      <!-- Category Quick Search -->
+      <h2 class="section-title"><i class="fa-solid fa-th-large"></i> Browse by Category</h2>
+      <div class="category-grid">
+        <div class="cat-card cat-pain"    onclick="quickSearch('Ibuprofen')">
+          <i class="fa-solid fa-head-side-virus"></i>
+          <span>Pain Relief</span>
+          <p>Ibuprofen, Aspirin</p>
+        </div>
+        <div class="cat-card cat-antibiotic" onclick="quickSearch('Amoxicillin')">
+          <i class="fa-solid fa-bacterium"></i>
+          <span>Antibiotics</span>
+          <p>Amoxicillin, Azithromycin</p>
+        </div>
+        <div class="cat-card cat-heart" onclick="quickSearch('Metoprolol')">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>Cardiac</span>
+          <p>Metoprolol, Lisinopril</p>
+        </div>
+        <div class="cat-card cat-diabetes" onclick="quickSearch('Metformin')">
+          <i class="fa-solid fa-droplet"></i>
+          <span>Diabetes</span>
+          <p>Metformin, Insulin</p>
+        </div>
+        <div class="cat-card cat-allergy" onclick="quickSearch('Cetirizine')">
+          <i class="fa-solid fa-wind"></i>
+          <span>Allergy</span>
+          <p>Cetirizine, Loratadine</p>
+        </div>
+        <div class="cat-card cat-mental" onclick="quickSearch('Sertraline')">
+          <i class="fa-solid fa-brain"></i>
+          <span>Mental Health</span>
+          <p>Sertraline, Fluoxetine</p>
+        </div>
+        <div class="cat-card cat-vitamin" onclick="quickSearch('Vitamin D')">
+          <i class="fa-solid fa-sun"></i>
+          <span>Vitamins</span>
+          <p>Vitamin D, Vitamin C</p>
+        </div>
+        <div class="cat-card cat-antacid" onclick="quickSearch('Omeprazole')">
+          <i class="fa-solid fa-stomach"></i>
+          <span>Antacids</span>
+          <p>Omeprazole, Pantoprazole</p>
+        </div>
+      </div>
+
+      <!-- Popular Medicines -->
+      <h2 class="section-title"><i class="fa-solid fa-fire"></i> Popular Searches</h2>
+      <div class="popular-grid">
+        <button class="pop-chip" onclick="quickSearch('Aspirin')">💊 Aspirin</button>
+        <button class="pop-chip" onclick="quickSearch('Paracetamol')">💊 Paracetamol</button>
+        <button class="pop-chip" onclick="quickSearch('Ibuprofen')">💊 Ibuprofen</button>
+        <button class="pop-chip" onclick="quickSearch('Amoxicillin')">💊 Amoxicillin</button>
+        <button class="pop-chip" onclick="quickSearch('Metformin')">💊 Metformin</button>
+        <button class="pop-chip" onclick="quickSearch('Atorvastatin')">💊 Atorvastatin</button>
+        <button class="pop-chip" onclick="quickSearch('Cetirizine')">💊 Cetirizine</button>
+        <button class="pop-chip" onclick="quickSearch('Omeprazole')">💊 Omeprazole</button>
+        <button class="pop-chip" onclick="quickSearch('Azithromycin')">💊 Azithromycin</button>
+        <button class="pop-chip" onclick="quickSearch('Sertraline')">💊 Sertraline</button>
+      </div>
+
+      <!-- Favourites -->
+      <div id="favSection" class="hidden">
+        <h2 class="section-title"><i class="fa-solid fa-star"></i> Your Favourites</h2>
+        <div id="favList" class="popular-grid"></div>
+      </div>
+
+    </div>
+    <!-- END HOMEPAGE -->
+
     <div id="error" class="error hidden">
       <i class="fa-solid fa-circle-xmark"></i> <span id="errorText"></span>
     </div>
 
-    <!-- Animated Pill Loader -->
     <div id="loader" class="loader hidden">
       <div class="pill-loader">
         <div class="pill-half left"></div>
@@ -46,30 +152,40 @@
       <p>Fetching medicine data...</p>
     </div>
 
+    <!-- ===== RESULTS ===== -->
     <div id="results" class="hidden">
 
-      <!-- Medicine Header -->
       <div class="medicine-header">
         <div class="med-title-group">
           <h2 id="medName"></h2>
           <div class="badges">
-            <span id="medBrand" class="badge brand-badge"></span>
-            <span id="rxBadge" class="badge rx-badge"></span>
+            <span id="medBrand"  class="badge brand-badge"></span>
+            <span id="rxBadge"   class="badge rx-badge"></span>
             <span id="routeBadge" class="badge route-badge"></span>
           </div>
         </div>
-        <div class="safety-meter-wrap">
-          <p class="safety-label">Safety Indicator</p>
-          <div class="safety-bar">
-            <div class="safety-fill" id="safetyFill"></div>
+        <div class="header-actions">
+          <button class="action-btn" id="favBtn" onclick="toggleFavourite()" title="Favourite">
+            <i class="fa-regular fa-star"></i>
+          </button>
+          <button class="action-btn" onclick="speakMedicine()" title="Read aloud">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+          <button class="action-btn" onclick="shareMedicine()" title="Share">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+          <button class="action-btn back-btn" onclick="goHome()" title="Back to home">
+            <i class="fa-solid fa-house"></i>
+          </button>
+          <div class="safety-meter-wrap">
+            <p class="safety-label">Safety Indicator</p>
+            <div class="safety-bar"><div class="safety-fill" id="safetyFill"></div></div>
+            <p class="safety-text" id="safetyText"></p>
           </div>
-          <p class="safety-text" id="safetyText"></p>
         </div>
       </div>
 
-      <!-- Cards Grid -->
       <div class="cards-grid">
-
         <div class="card card-blue" style="--i:0">
           <div class="card-header">
             <h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3>
@@ -77,7 +193,6 @@
           </div>
           <p id="purpose"></p>
         </div>
-
         <div class="card card-green" style="--i:1">
           <div class="card-header">
             <h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3>
@@ -85,7 +200,6 @@
           </div>
           <p id="dosage"></p>
         </div>
-
         <div class="card card-orange" style="--i:2">
           <div class="card-header">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3>
@@ -93,7 +207,6 @@
           </div>
           <p id="warnings"></p>
         </div>
-
         <div class="card card-red" style="--i:3">
           <div class="card-header">
             <h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3>
@@ -101,7 +214,6 @@
           </div>
           <p id="sideEffects"></p>
         </div>
-
         <div class="card card-purple" style="--i:4">
           <div class="card-header">
             <h3><i class="fa-solid fa-ban"></i> Contraindications</h3>
@@ -109,7 +221,6 @@
           </div>
           <p id="contraindications"></p>
         </div>
-
         <div class="card card-teal" style="--i:5">
           <div class="card-header">
             <h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3>
@@ -117,7 +228,6 @@
           </div>
           <p id="precautions"></p>
         </div>
-
         <div class="card card-blue" style="--i:6">
           <div class="card-header">
             <h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3>
@@ -125,7 +235,6 @@
           </div>
           <p id="storage"></p>
         </div>
-
         <div class="card card-green" style="--i:7">
           <div class="card-header">
             <h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3>
@@ -133,19 +242,16 @@
           </div>
           <p id="manufacturer"></p>
         </div>
-
       </div>
 
       <div class="disclaimer">
         <i class="fa-solid fa-stethoscope"></i>
-        This information is sourced from the <strong>U.S. FDA OpenData</strong> and is for <strong>educational purposes only</strong>. Always consult a licensed physician before taking any medication.
+        Sourced from <strong>U.S. FDA OpenData</strong>. For <strong>educational purposes only</strong>. Always consult a licensed physician.
       </div>
-
     </div>
   </main>
 
-  <!-- Toast Notification -->
-  <div id="toast" class="toast hidden">✅ Copied to clipboard!</div>
+  <div id="toast" class="toast hidden"></div>
 
   <script src="js/medicine.js"></script>
 </body>
