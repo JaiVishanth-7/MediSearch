@@ -344,3 +344,111 @@ function renderData(d) {
   calcSafety(d);
   document.getElementById("results").classList.remove("hidden");
 }
+
+/* ===== MODAL SYSTEM ===== */
+function openModal(id) {
+  document.getElementById(id).classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add("hidden");
+  document.body.style.overflow = "";
+}
+function closeOnOverlay(e, id) {
+  if (e.target === e.currentTarget) closeModal(id);
+}
+function switchModal(closeId, openId) {
+  closeModal(closeId);
+  openModal(openId);
+}
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    ["loginModal","registerModal","aboutModal","termsModal","supportModal"].forEach(closeModal);
+    document.body.style.overflow = "";
+  }
+});
+
+/* ===== AUTH ===== */
+function handleLogin(e) {
+  e.preventDefault();
+  const email    = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errorEl  = document.getElementById("loginError");
+
+  const users = JSON.parse(localStorage.getItem("medUsers") || "[]");
+  const user  = users.find(u => u.email === email && u.password === password);
+
+  if (!user) {
+    errorEl.textContent = "❌ Invalid email or password.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+  errorEl.classList.add("hidden");
+  localStorage.setItem("medCurrentUser", JSON.stringify(user));
+  closeModal("loginModal");
+  updateNavUser(user);
+  showToast(`👋 Welcome back, ${user.name.split(" ")[0]}!`);
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const name     = document.getElementById("regName").value.trim();
+  const email    = document.getElementById("regEmail").value.trim();
+  const password = document.getElementById("regPassword").value;
+  const confirm  = document.getElementById("regConfirm").value;
+  const errorEl  = document.getElementById("regError");
+
+  if (password.length < 6) {
+    errorEl.textContent = "❌ Password must be at least 6 characters."; errorEl.classList.remove("hidden"); return;
+  }
+  if (password !== confirm) {
+    errorEl.textContent = "❌ Passwords do not match."; errorEl.classList.remove("hidden"); return;
+  }
+  const users = JSON.parse(localStorage.getItem("medUsers") || "[]");
+  if (users.find(u => u.email === email)) {
+    errorEl.textContent = "❌ An account with this email already exists."; errorEl.classList.remove("hidden"); return;
+  }
+  const newUser = { name, email, password };
+  users.push(newUser);
+  localStorage.setItem("medUsers", JSON.stringify(users));
+  localStorage.setItem("medCurrentUser", JSON.stringify(newUser));
+  errorEl.classList.add("hidden");
+  closeModal("registerModal");
+  updateNavUser(newUser);
+  showToast(`🎉 Welcome to MediSearch, ${name.split(" ")[0]}!`);
+}
+
+function logOut() {
+  localStorage.removeItem("medCurrentUser");
+  document.getElementById("navUser").classList.add("hidden");
+  document.getElementById("navGuest").classList.remove("hidden");
+  showToast("👋 Signed out successfully.");
+}
+
+function updateNavUser(user) {
+  document.getElementById("navGuest").classList.add("hidden");
+  document.getElementById("navUser").classList.remove("hidden");
+  document.getElementById("userAvatar").textContent = user.name.charAt(0).toUpperCase();
+  document.getElementById("userGreet").textContent  = `Hi, ${user.name.split(" ")[0]}`;
+}
+
+// Restore session on load
+(function () {
+  const saved = localStorage.getItem("medCurrentUser");
+  if (saved) updateNavUser(JSON.parse(saved));
+})();
+
+/* ===== NEWSLETTER ===== */
+function subscribeNewsletter(e) {
+  e.preventDefault();
+  const email   = document.getElementById("newsletterEmail").value.trim();
+  const success = document.getElementById("newsletterSuccess");
+  const subs    = JSON.parse(localStorage.getItem("medSubscribers") || "[]");
+  if (!subs.includes(email)) {
+    subs.push(email);
+    localStorage.setItem("medSubscribers", JSON.stringify(subs));
+  }
+  success.classList.remove("hidden");
+  document.getElementById("newsletterEmail").value = "";
+  showToast("📧 Subscribed successfully!");
+}

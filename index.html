@@ -9,36 +9,40 @@
 </head>
 <body>
 
-  <!-- Theme Toggle -->
-  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
-    <i class="fa-solid fa-moon" id="themeIcon"></i>
-  </button>
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="nav-logo"><span>💊</span> MediSearch</div>
+    <div class="nav-actions">
+      <button class="theme-toggle-nav" onclick="toggleTheme()" title="Toggle theme">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+      <div id="navGuest" class="nav-auth">
+        <button class="btn-outline" onclick="openModal('loginModal')"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+        <button class="btn-primary" onclick="openModal('registerModal')"><i class="fa-solid fa-user-plus"></i> Register</button>
+      </div>
+      <div id="navUser" class="nav-user hidden">
+        <div class="user-avatar" id="userAvatar">J</div>
+        <span id="userGreet" class="user-greet"></span>
+        <button class="btn-outline-sm" onclick="logOut()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
 
   <!-- ===== HEADER ===== -->
   <header>
     <div class="logo"><span class="pill-icon">💊</span> MediSearch</div>
     <p class="tagline">Your intelligent medicine information companion</p>
-
-    <!-- Search -->
     <div class="search-wrapper">
       <div class="search-box" id="searchBox">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input type="text" id="medInput"
           placeholder="Search medicine (e.g. Ibuprofen, Aspirin)..."
-          autocomplete="off"
-          oninput="onTyping()"
-          onkeydown="onKeyDown(event)" />
+          autocomplete="off" oninput="onTyping()" onkeydown="onKeyDown(event)" />
         <button onclick="searchMedicine()">Search</button>
       </div>
-
-      <!-- Autocomplete Dropdown -->
       <ul id="autocompleteList" class="autocomplete-list hidden"></ul>
-
-      <!-- History Bar -->
       <div id="historyBar" class="history-bar hidden"></div>
     </div>
-
-    <!-- Health Tip Ticker -->
     <div class="tip-ticker">
       <span class="tip-label"><i class="fa-solid fa-lightbulb"></i> Tip:</span>
       <span id="tipText" class="tip-text"></span>
@@ -48,75 +52,27 @@
   <!-- ===== MAIN ===== -->
   <main>
 
-    <!-- ===== HOMEPAGE (shown before any search) ===== -->
+    <!-- HOMEPAGE -->
     <div id="homepage">
-
-      <!-- Stats Row -->
       <div class="stats-row">
-        <div class="stat-card">
-          <i class="fa-solid fa-database"></i>
-          <div><strong>100,000+</strong><span>FDA Drug Records</span></div>
-        </div>
-        <div class="stat-card">
-          <i class="fa-solid fa-flask"></i>
-          <div><strong>Free</strong><span>No API Key Needed</span></div>
-        </div>
-        <div class="stat-card">
-          <i class="fa-solid fa-bolt"></i>
-          <div><strong>Instant</strong><span>Real-time Data</span></div>
-        </div>
-        <div class="stat-card">
-          <i class="fa-solid fa-shield-halved"></i>
-          <div><strong>Trusted</strong><span>FDA OpenData Source</span></div>
-        </div>
+        <div class="stat-card"><i class="fa-solid fa-database"></i><div><strong>100,000+</strong><span>FDA Drug Records</span></div></div>
+        <div class="stat-card"><i class="fa-solid fa-flask"></i><div><strong>Free</strong><span>No API Key Needed</span></div></div>
+        <div class="stat-card"><i class="fa-solid fa-bolt"></i><div><strong>Instant</strong><span>Real-time Data</span></div></div>
+        <div class="stat-card"><i class="fa-solid fa-shield-halved"></i><div><strong>Trusted</strong><span>FDA OpenData Source</span></div></div>
       </div>
 
-      <!-- Category Quick Search -->
       <h2 class="section-title"><i class="fa-solid fa-th-large"></i> Browse by Category</h2>
       <div class="category-grid">
-        <div class="cat-card cat-pain"    onclick="quickSearch('Ibuprofen')">
-          <i class="fa-solid fa-head-side-virus"></i>
-          <span>Pain Relief</span>
-          <p>Ibuprofen, Aspirin</p>
-        </div>
-        <div class="cat-card cat-antibiotic" onclick="quickSearch('Amoxicillin')">
-          <i class="fa-solid fa-bacterium"></i>
-          <span>Antibiotics</span>
-          <p>Amoxicillin, Azithromycin</p>
-        </div>
-        <div class="cat-card cat-heart" onclick="quickSearch('Metoprolol')">
-          <i class="fa-solid fa-heart-pulse"></i>
-          <span>Cardiac</span>
-          <p>Metoprolol, Lisinopril</p>
-        </div>
-        <div class="cat-card cat-diabetes" onclick="quickSearch('Metformin')">
-          <i class="fa-solid fa-droplet"></i>
-          <span>Diabetes</span>
-          <p>Metformin, Insulin</p>
-        </div>
-        <div class="cat-card cat-allergy" onclick="quickSearch('Cetirizine')">
-          <i class="fa-solid fa-wind"></i>
-          <span>Allergy</span>
-          <p>Cetirizine, Loratadine</p>
-        </div>
-        <div class="cat-card cat-mental" onclick="quickSearch('Sertraline')">
-          <i class="fa-solid fa-brain"></i>
-          <span>Mental Health</span>
-          <p>Sertraline, Fluoxetine</p>
-        </div>
-        <div class="cat-card cat-vitamin" onclick="quickSearch('Vitamin D')">
-          <i class="fa-solid fa-sun"></i>
-          <span>Vitamins</span>
-          <p>Vitamin D, Vitamin C</p>
-        </div>
-        <div class="cat-card cat-antacid" onclick="quickSearch('Omeprazole')">
-          <i class="fa-solid fa-stomach"></i>
-          <span>Antacids</span>
-          <p>Omeprazole, Pantoprazole</p>
-        </div>
+        <div class="cat-card cat-pain"       onclick="quickSearch('Ibuprofen')"><i class="fa-solid fa-head-side-virus"></i><span>Pain Relief</span><p>Ibuprofen, Aspirin</p></div>
+        <div class="cat-card cat-antibiotic" onclick="quickSearch('Amoxicillin')"><i class="fa-solid fa-bacterium"></i><span>Antibiotics</span><p>Amoxicillin, Azithromycin</p></div>
+        <div class="cat-card cat-heart"      onclick="quickSearch('Metoprolol')"><i class="fa-solid fa-heart-pulse"></i><span>Cardiac</span><p>Metoprolol, Lisinopril</p></div>
+        <div class="cat-card cat-diabetes"   onclick="quickSearch('Metformin')"><i class="fa-solid fa-droplet"></i><span>Diabetes</span><p>Metformin, Insulin</p></div>
+        <div class="cat-card cat-allergy"    onclick="quickSearch('Cetirizine')"><i class="fa-solid fa-wind"></i><span>Allergy</span><p>Cetirizine, Loratadine</p></div>
+        <div class="cat-card cat-mental"     onclick="quickSearch('Sertraline')"><i class="fa-solid fa-brain"></i><span>Mental Health</span><p>Sertraline, Fluoxetine</p></div>
+        <div class="cat-card cat-vitamin"    onclick="quickSearch('Vitamin D')"><i class="fa-solid fa-sun"></i><span>Vitamins</span><p>Vitamin D, Vitamin C</p></div>
+        <div class="cat-card cat-antacid"    onclick="quickSearch('Omeprazole')"><i class="fa-solid fa-capsules"></i><span>Antacids</span><p>Omeprazole, Pantoprazole</p></div>
       </div>
 
-      <!-- Popular Medicines -->
       <h2 class="section-title"><i class="fa-solid fa-fire"></i> Popular Searches</h2>
       <div class="popular-grid">
         <button class="pop-chip" onclick="quickSearch('Aspirin')">💊 Aspirin</button>
@@ -131,10 +87,24 @@
         <button class="pop-chip" onclick="quickSearch('Sertraline')">💊 Sertraline</button>
       </div>
 
-      <!-- Favourites -->
       <div id="favSection" class="hidden">
         <h2 class="section-title"><i class="fa-solid fa-star"></i> Your Favourites</h2>
         <div id="favList" class="popular-grid"></div>
+      </div>
+
+      <!-- ===== NEWSLETTER ===== -->
+      <div class="newsletter-section">
+        <div class="newsletter-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+        <h2>Subscribe to Our Newsletter</h2>
+        <p>Get weekly health tips, new medicine alerts, and drug safety updates delivered to your inbox.</p>
+        <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+          <input type="email" id="newsletterEmail" placeholder="Enter your email address..." required />
+          <button type="submit"><i class="fa-solid fa-paper-plane"></i> Subscribe</button>
+        </form>
+        <p class="newsletter-note"><i class="fa-solid fa-lock"></i> No spam. Unsubscribe anytime. We respect your privacy.</p>
+        <div id="newsletterSuccess" class="newsletter-success hidden">
+          <i class="fa-solid fa-circle-check"></i> You're subscribed! Welcome to MediSearch newsletter.
+        </div>
       </div>
 
     </div>
@@ -143,40 +113,27 @@
     <div id="error" class="error hidden">
       <i class="fa-solid fa-circle-xmark"></i> <span id="errorText"></span>
     </div>
-
     <div id="loader" class="loader hidden">
-      <div class="pill-loader">
-        <div class="pill-half left"></div>
-        <div class="pill-half right"></div>
-      </div>
+      <div class="pill-loader"><div class="pill-half left"></div><div class="pill-half right"></div></div>
       <p>Fetching medicine data...</p>
     </div>
 
-    <!-- ===== RESULTS ===== -->
+    <!-- RESULTS -->
     <div id="results" class="hidden">
-
       <div class="medicine-header">
         <div class="med-title-group">
           <h2 id="medName"></h2>
           <div class="badges">
-            <span id="medBrand"  class="badge brand-badge"></span>
-            <span id="rxBadge"   class="badge rx-badge"></span>
+            <span id="medBrand"   class="badge brand-badge"></span>
+            <span id="rxBadge"    class="badge rx-badge"></span>
             <span id="routeBadge" class="badge route-badge"></span>
           </div>
         </div>
         <div class="header-actions">
-          <button class="action-btn" id="favBtn" onclick="toggleFavourite()" title="Favourite">
-            <i class="fa-regular fa-star"></i>
-          </button>
-          <button class="action-btn" onclick="speakMedicine()" title="Read aloud">
-            <i class="fa-solid fa-volume-high"></i>
-          </button>
-          <button class="action-btn" onclick="shareMedicine()" title="Share">
-            <i class="fa-solid fa-share-nodes"></i>
-          </button>
-          <button class="action-btn back-btn" onclick="goHome()" title="Back to home">
-            <i class="fa-solid fa-house"></i>
-          </button>
+          <button class="action-btn" id="favBtn" onclick="toggleFavourite()" title="Favourite"><i class="fa-regular fa-star"></i></button>
+          <button class="action-btn" onclick="speakMedicine()" title="Read aloud"><i class="fa-solid fa-volume-high"></i></button>
+          <button class="action-btn" onclick="shareMedicine()" title="Share"><i class="fa-solid fa-share-nodes"></i></button>
+          <button class="action-btn" onclick="goHome()" title="Back to home"><i class="fa-solid fa-house"></i></button>
           <div class="safety-meter-wrap">
             <p class="safety-label">Safety Indicator</p>
             <div class="safety-bar"><div class="safety-fill" id="safetyFill"></div></div>
@@ -184,66 +141,16 @@
           </div>
         </div>
       </div>
-
       <div class="cards-grid">
-        <div class="card card-blue" style="--i:0">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3>
-            <button class="copy-btn" onclick="copyCard('purpose')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="purpose"></p>
-        </div>
-        <div class="card card-green" style="--i:1">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3>
-            <button class="copy-btn" onclick="copyCard('dosage')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="dosage"></p>
-        </div>
-        <div class="card card-orange" style="--i:2">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3>
-            <button class="copy-btn" onclick="copyCard('warnings')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="warnings"></p>
-        </div>
-        <div class="card card-red" style="--i:3">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3>
-            <button class="copy-btn" onclick="copyCard('sideEffects')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="sideEffects"></p>
-        </div>
-        <div class="card card-purple" style="--i:4">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-ban"></i> Contraindications</h3>
-            <button class="copy-btn" onclick="copyCard('contraindications')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="contraindications"></p>
-        </div>
-        <div class="card card-teal" style="--i:5">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3>
-            <button class="copy-btn" onclick="copyCard('precautions')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="precautions"></p>
-        </div>
-        <div class="card card-blue" style="--i:6">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3>
-            <button class="copy-btn" onclick="copyCard('storage')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="storage"></p>
-        </div>
-        <div class="card card-green" style="--i:7">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3>
-            <button class="copy-btn" onclick="copyCard('manufacturer')"><i class="fa-regular fa-copy"></i></button>
-          </div>
-          <p id="manufacturer"></p>
-        </div>
+        <div class="card card-blue"   style="--i:0"><div class="card-header"><h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3><button class="copy-btn" onclick="copyCard('purpose')"><i class="fa-regular fa-copy"></i></button></div><p id="purpose"></p></div>
+        <div class="card card-green"  style="--i:1"><div class="card-header"><h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3><button class="copy-btn" onclick="copyCard('dosage')"><i class="fa-regular fa-copy"></i></button></div><p id="dosage"></p></div>
+        <div class="card card-orange" style="--i:2"><div class="card-header"><h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3><button class="copy-btn" onclick="copyCard('warnings')"><i class="fa-regular fa-copy"></i></button></div><p id="warnings"></p></div>
+        <div class="card card-red"    style="--i:3"><div class="card-header"><h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3><button class="copy-btn" onclick="copyCard('sideEffects')"><i class="fa-regular fa-copy"></i></button></div><p id="sideEffects"></p></div>
+        <div class="card card-purple" style="--i:4"><div class="card-header"><h3><i class="fa-solid fa-ban"></i> Contraindications</h3><button class="copy-btn" onclick="copyCard('contraindications')"><i class="fa-regular fa-copy"></i></button></div><p id="contraindications"></p></div>
+        <div class="card card-teal"   style="--i:5"><div class="card-header"><h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3><button class="copy-btn" onclick="copyCard('precautions')"><i class="fa-regular fa-copy"></i></button></div><p id="precautions"></p></div>
+        <div class="card card-blue"   style="--i:6"><div class="card-header"><h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3><button class="copy-btn" onclick="copyCard('storage')"><i class="fa-regular fa-copy"></i></button></div><p id="storage"></p></div>
+        <div class="card card-green"  style="--i:7"><div class="card-header"><h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3><button class="copy-btn" onclick="copyCard('manufacturer')"><i class="fa-regular fa-copy"></i></button></div><p id="manufacturer"></p></div>
       </div>
-
       <div class="disclaimer">
         <i class="fa-solid fa-stethoscope"></i>
         Sourced from <strong>U.S. FDA OpenData</strong>. For <strong>educational purposes only</strong>. Always consult a licensed physician.
@@ -251,8 +158,190 @@
     </div>
   </main>
 
-  <div id="toast" class="toast hidden"></div>
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">💊 MediSearch</div>
+        <p>Your trusted companion for medicine information, powered by U.S. FDA OpenData.</p>
+        <div class="social-links">
+          <a href="#" title="Twitter"><i class="fa-brands fa-twitter"></i></a>
+          <a href="#" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4><i class="fa-solid fa-circle-info"></i> Company</h4>
+          <ul>
+            <li><a href="#" onclick="openModal('aboutModal')">About Us</a></li>
+            <li><a href="#">Our Team</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4><i class="fa-solid fa-scale-balanced"></i> Legal</h4>
+          <ul>
+            <li><a href="#" onclick="openModal('termsModal')">Terms & Conditions</a></li>
+            <li><a href="#" onclick="openModal('termsModal')">Privacy Policy</a></li>
+            <li><a href="#" onclick="openModal('termsModal')">Cookie Policy</a></li>
+            <li><a href="#" onclick="openModal('termsModal')">Disclaimer</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4><i class="fa-solid fa-headset"></i> Support</h4>
+          <ul>
+            <li><a href="#" onclick="openModal('supportModal')">Help Center</a></li>
+            <li><a href="#" onclick="openModal('supportModal')">Contact Us</a></li>
+            <li><a href="#" onclick="openModal('supportModal')">Report an Issue</a></li>
+            <li><a href="#" onclick="openModal('supportModal')">FAQs</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 MediSearch. All rights reserved. Data sourced from <a href="https://open.fda.gov" target="_blank">OpenFDA</a>.</p>
+      <p class="footer-disclaimer">⚠️ Not a substitute for professional medical advice.</p>
+    </div>
+  </footer>
 
+  <!-- ===== MODALS ===== -->
+
+  <!-- Sign In Modal -->
+  <div id="loginModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'loginModal')">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('loginModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon"><i class="fa-solid fa-right-to-bracket"></i></div>
+      <h2>Welcome Back</h2>
+      <p class="modal-sub">Sign in to access your favourites and history</p>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrap"><i class="fa-solid fa-envelope"></i><input type="email" id="loginEmail" placeholder="you@example.com" required /></div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="loginPassword" placeholder="Enter password" required /></div>
+        </div>
+        <div id="loginError" class="form-error hidden"></div>
+        <button type="submit" class="btn-modal-primary">Sign In</button>
+      </form>
+      <p class="modal-footer-text">Don't have an account? <a href="#" onclick="switchModal('loginModal','registerModal')">Register here</a></p>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="registerModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'registerModal')">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('registerModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon register-icon"><i class="fa-solid fa-user-plus"></i></div>
+      <h2>Create Account</h2>
+      <p class="modal-sub">Join MediSearch for free today</p>
+      <form onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <div class="input-wrap"><i class="fa-solid fa-user"></i><input type="text" id="regName" placeholder="Your full name" required /></div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="input-wrap"><i class="fa-solid fa-envelope"></i><input type="email" id="regEmail" placeholder="you@example.com" required /></div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="regPassword" placeholder="Min. 6 characters" required /></div>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="regConfirm" placeholder="Repeat password" required /></div>
+        </div>
+        <div id="regError" class="form-error hidden"></div>
+        <button type="submit" class="btn-modal-primary register-btn">Create Account</button>
+      </form>
+      <p class="modal-footer-text">Already have an account? <a href="#" onclick="switchModal('registerModal','loginModal')">Sign in</a></p>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div id="aboutModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'aboutModal')">
+    <div class="modal modal-wide">
+      <button class="modal-close" onclick="closeModal('aboutModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon about-icon"><i class="fa-solid fa-circle-info"></i></div>
+      <h2>About MediSearch</h2>
+      <div class="modal-content-body">
+        <p>MediSearch is a free, open-access medicine information platform powered by the <strong>U.S. FDA OpenData API</strong>. Our mission is to make reliable drug information accessible to everyone — patients, caregivers, and healthcare professionals alike.</p>
+        <div class="about-grid">
+          <div class="about-card"><i class="fa-solid fa-bullseye"></i><h4>Our Mission</h4><p>Democratize access to accurate, trustworthy medicine information worldwide.</p></div>
+          <div class="about-card"><i class="fa-solid fa-eye"></i><h4>Our Vision</h4><p>A world where every person can make informed health decisions with confidence.</p></div>
+          <div class="about-card"><i class="fa-solid fa-heart"></i><h4>Our Values</h4><p>Accuracy, transparency, accessibility, and patient safety above all else.</p></div>
+          <div class="about-card"><i class="fa-solid fa-shield-halved"></i><h4>Data Source</h4><p>All data is sourced directly from the official U.S. FDA OpenData database.</p></div>
+        </div>
+        <p class="modal-note"><i class="fa-solid fa-triangle-exclamation"></i> MediSearch is for <strong>educational purposes only</strong> and does not constitute medical advice.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms Modal -->
+  <div id="termsModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'termsModal')">
+    <div class="modal modal-wide">
+      <button class="modal-close" onclick="closeModal('termsModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon terms-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <h2>Terms & Conditions</h2>
+      <div class="modal-content-body scrollable">
+        <p class="terms-date">Last updated: January 2025</p>
+        <h4>1. Acceptance of Terms</h4>
+        <p>By accessing MediSearch, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use this service.</p>
+        <h4>2. Medical Disclaimer</h4>
+        <p>MediSearch provides information for <strong>educational purposes only</strong>. It is NOT a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making any medical decisions.</p>
+        <h4>3. Data Accuracy</h4>
+        <p>Information is sourced from the U.S. FDA OpenData API. While we strive for accuracy, we cannot guarantee that all information is complete, current, or error-free.</p>
+        <h4>4. Privacy Policy</h4>
+        <p>We collect minimal data (preferences stored locally on your device). We do not sell or share your personal data with third parties.</p>
+        <h4>5. User Accounts</h4>
+        <p>User credentials are stored locally in your browser for demonstration purposes. Do not use sensitive passwords. Account data may be cleared when browser storage is reset.</p>
+        <h4>6. Newsletter</h4>
+        <p>By subscribing to our newsletter, you consent to receive health tips and updates. You may unsubscribe at any time.</p>
+        <h4>7. Intellectual Property</h4>
+        <p>All content, design, and code of MediSearch are the intellectual property of MediSearch. Unauthorized reproduction is prohibited.</p>
+        <h4>8. Limitation of Liability</h4>
+        <p>MediSearch shall not be held liable for any damages arising from the use of information provided on this platform.</p>
+        <h4>9. Changes to Terms</h4>
+        <p>We reserve the right to update these terms at any time. Continued use of the service constitutes acceptance of the new terms.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Support Modal -->
+  <div id="supportModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'supportModal')">
+    <div class="modal modal-wide">
+      <button class="modal-close" onclick="closeModal('supportModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon support-icon"><i class="fa-solid fa-headset"></i></div>
+      <h2>Support Center</h2>
+      <div class="modal-content-body">
+        <div class="support-grid">
+          <div class="support-card"><i class="fa-solid fa-magnifying-glass"></i><h4>Search Tips</h4><p>Use generic names (e.g. Ibuprofen) for best results. Avoid abbreviations.</p></div>
+          <div class="support-card"><i class="fa-solid fa-rotate"></i><h4>Data Not Loading?</h4><p>Check your internet connection. The FDA API requires an active connection.</p></div>
+          <div class="support-card"><i class="fa-solid fa-star"></i><h4>Favourites</h4><p>Click the star ⭐ icon on any result page to save medicines to your favourites.</p></div>
+          <div class="support-card"><i class="fa-solid fa-moon"></i><h4>Dark Mode</h4><p>Toggle dark/light mode using the moon icon in the top navigation bar.</p></div>
+        </div>
+        <div class="faqs">
+          <h4><i class="fa-solid fa-circle-question"></i> Frequently Asked Questions</h4>
+          <div class="faq-item"><p class="faq-q">Is MediSearch free to use?</p><p class="faq-a">Yes! MediSearch is completely free. No subscription or API key required.</p></div>
+          <div class="faq-item"><p class="faq-q">Where does the data come from?</p><p class="faq-a">All medicine data is sourced from the official U.S. FDA OpenData API (open.fda.gov).</p></div>
+          <div class="faq-item"><p class="faq-q">Can I use this for medical advice?</p><p class="faq-a">No. MediSearch is for educational purposes only. Always consult a licensed physician.</p></div>
+          <div class="faq-item"><p class="faq-q">My medicine is not showing up?</p><p class="faq-a">Try the generic name instead of brand name. Not all medicines are in the FDA database.</p></div>
+        </div>
+        <div class="contact-box">
+          <h4><i class="fa-solid fa-envelope"></i> Contact Us</h4>
+          <p>Email us at <strong>support@medisearch.io</strong> — we respond within 24 hours.</p>
+          <p>For urgent medical issues, please contact emergency services or a licensed physician.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
   <script src="js/medicine.js"></script>
 </body>
 </html>
