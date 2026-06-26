@@ -23,6 +23,9 @@
       <div id="navUser" class="nav-user hidden">
         <div class="user-avatar" id="userAvatar">J</div>
         <span id="userGreet" class="user-greet"></span>
+        <button class="btn-health" onclick="openModal('patientModal')" title="My Health Profile">
+          <i class="fa-solid fa-notes-medical"></i> My Profile
+        </button>
         <button class="btn-outline-sm" onclick="logOut()">Sign Out</button>
       </div>
     </div>
@@ -54,6 +57,23 @@
 
     <!-- HOMEPAGE -->
     <div id="homepage">
+      <!-- Patient Profile Dashboard (shown when profile exists) -->
+      <div id="patientDashboard" class="patient-dashboard hidden">
+        <div class="pd-header">
+          <div class="pd-avatar" id="pdAvatar"></div>
+          <div>
+            <h3 id="pdName"></h3>
+            <p id="pdSub"></p>
+          </div>
+          <button class="pd-edit-btn" onclick="openModal('patientModal')"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+        </div>
+        <div class="pd-vitals" id="pdVitals"></div>
+        <div id="pdMedsRow" class="pd-meds-row hidden">
+          <p class="pd-meds-label"><i class="fa-solid fa-pills"></i> Current Medicines:</p>
+          <div id="pdMedsList" class="popular-grid"></div>
+        </div>
+      </div>
+
       <div class="stats-row">
         <div class="stat-card"><i class="fa-solid fa-database"></i><div><strong>100,000+</strong><span>FDA Drug Records</span></div></div>
         <div class="stat-card"><i class="fa-solid fa-flask"></i><div><strong>Free</strong><span>No API Key Needed</span></div></div>
@@ -137,6 +157,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Patient Alert Banner on results page -->
+      <div id="patientAlert" class="patient-alert hidden"></div>
 
       <!-- Meta info strip -->
       <div id="metaStrip" class="meta-strip"></div>
@@ -334,6 +357,111 @@
           <p>For urgent medical issues, please contact emergency services or a licensed physician.</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Patient Profile Modal -->
+  <div id="patientModal" class="modal-overlay hidden" onclick="closeOnOverlay(event,'patientModal')">
+    <div class="modal modal-wide">
+      <button class="modal-close" onclick="closeModal('patientModal')"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-icon patient-icon"><i class="fa-solid fa-notes-medical"></i></div>
+      <h2>My Health Profile</h2>
+      <p class="modal-sub">Your details help us personalise medicine safety alerts for you</p>
+      <form onsubmit="savePatientProfile(event)" class="patient-form">
+
+        <div class="pf-section-title"><i class="fa-solid fa-user"></i> Personal Information</div>
+        <div class="pf-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <div class="input-wrap"><i class="fa-solid fa-user"></i><input type="text" id="pfName" placeholder="Your full name" /></div>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <div class="input-wrap"><i class="fa-solid fa-calendar"></i><input type="date" id="pfDob" /></div>
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-venus-mars"></i>
+              <select id="pfGender">
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other / Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Blood Group</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-droplet"></i>
+              <select id="pfBloodGroup">
+                <option value="">Select blood group</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+                <option>O+</option><option>O-</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="pf-section-title"><i class="fa-solid fa-weight-scale"></i> Physical Measurements</div>
+        <div class="pf-grid">
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <div class="input-wrap"><i class="fa-solid fa-weight-scale"></i><input type="number" id="pfWeight" placeholder="e.g. 65" min="1" max="300" /></div>
+          </div>
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <div class="input-wrap"><i class="fa-solid fa-ruler-vertical"></i><input type="number" id="pfHeight" placeholder="e.g. 170" min="50" max="250" /></div>
+          </div>
+        </div>
+
+        <div class="pf-section-title"><i class="fa-solid fa-heart-pulse"></i> Vital Signs</div>
+        <div class="pf-grid">
+          <div class="form-group">
+            <label>Blood Pressure (mmHg)</label>
+            <div class="input-wrap"><i class="fa-solid fa-heart-pulse"></i><input type="text" id="pfBP" placeholder="e.g. 120/80" pattern="\d{2,3}/\d{2,3}" /></div>
+          </div>
+          <div class="form-group">
+            <label>Pulse Rate (bpm)</label>
+            <div class="input-wrap"><i class="fa-solid fa-wave-square"></i><input type="number" id="pfPulse" placeholder="e.g. 72" min="30" max="200" /></div>
+          </div>
+          <div class="form-group">
+            <label>Blood Sugar (mg/dL)</label>
+            <div class="input-wrap"><i class="fa-solid fa-droplet"></i><input type="number" id="pfSugar" placeholder="e.g. 95" min="40" max="600" /></div>
+          </div>
+          <div class="form-group">
+            <label>Temperature (°F)</label>
+            <div class="input-wrap"><i class="fa-solid fa-thermometer"></i><input type="number" id="pfTemp" placeholder="e.g. 98.6" step="0.1" min="90" max="110" /></div>
+          </div>
+        </div>
+
+        <div class="pf-section-title"><i class="fa-solid fa-pills"></i> Medical History</div>
+        <div class="pf-grid">
+          <div class="form-group">
+            <label>Known Allergies</label>
+            <div class="input-wrap"><i class="fa-solid fa-ban"></i><input type="text" id="pfAllergies" placeholder="e.g. Penicillin, Sulfa" /></div>
+          </div>
+          <div class="form-group">
+            <label>Existing Conditions</label>
+            <div class="input-wrap"><i class="fa-solid fa-stethoscope"></i><input type="text" id="pfConditions" placeholder="e.g. Diabetes, Hypertension" /></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Current Medicines (comma separated)</label>
+          <div class="input-wrap"><i class="fa-solid fa-capsules"></i><input type="text" id="pfMedicines" placeholder="e.g. Metformin, Aspirin, Lisinopril" /></div>
+        </div>
+        <div class="form-group">
+          <label>Additional Notes</label>
+          <div class="input-wrap"><i class="fa-solid fa-note-sticky"></i><textarea id="pfNotes" placeholder="Any additional health notes..." rows="2" style="flex:1;border:none;outline:none;background:transparent;resize:none;font-size:0.92rem;color:var(--text);"></textarea></div>
+        </div>
+
+        <button type="submit" class="btn-modal-primary patient-save-btn">
+          <i class="fa-solid fa-floppy-disk"></i> Save Health Profile
+        </button>
+      </form>
     </div>
   </div>
 

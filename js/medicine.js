@@ -271,6 +271,7 @@ function goHome() {
   document.getElementById("error").classList.add("hidden");
   document.getElementById("homepage").classList.remove("hidden");
   document.getElementById("medInput").value = "";
+  document.getElementById("patientAlert").classList.add("hidden");
   window.speechSynthesis?.cancel();
 }
 
@@ -298,7 +299,7 @@ async function searchMedicine() {
     if (!results) throw new Error(`No results for "${query}". Try: Ibuprofen, Aspirin, Metformin`);
 
     saveHistory(query);
-    renderData(results);
+    (window.renderDataHook || renderData)(results);
 
   } catch (err) {
     errorText.textContent = err.message;
@@ -546,3 +547,299 @@ function subscribeNewsletter(e) {
   document.getElementById("newsletterEmail").value = "";
   showToast("📧 Subscribed successfully!");
 }
+
+/* ===== PATIENT PROFILE ===== */
+let patientProfile = JSON.parse(localStorage.getItem("medPatient") || "null");
+
+function savePatientProfile(e) {
+  e.preventDefault();
+
+  const dob    = document.getElementById("pfDob").value;
+  const weight = parseFloat(document.getElementById("pfWeight").value) || null;
+  const height = parseFloat(document.getElementById("pfHeight").value) || null;
+
+  // Calculate age from DOB
+  let age = null;
+  if (dob) {
+    const today = new Date();
+    const birth = new Date(dob);
+    age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  }
+
+  // Calculate BMI
+  let bmi = null;
+  if (weight && height) bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+
+  patientProfile = {
+    name:        document.getElementById("pfName").value.trim(),
+    dob, age, gender:  document.getElementById("pfGender").value,
+    bloodGroup:  document.getElementById("pfBloodGroup").value,
+    weight, height, bmi,
+    bp:          document.getElementById("pfBP").value.trim(),
+    pulse:       document.getElementById("pfPulse").value.trim(),
+    sugar:       document.getElementById("pfSugar").value.trim(),
+    temp:        document.getElementById("pfTemp").value.trim(),
+    allergies:   document.getElementById("pfAllergies").value.trim(),
+    conditions:  document.getElementById("pfConditions").value.trim(),
+    medicines:   document.getElementById("pfMedicines").value.trim(),
+    notes:       document.getElementById("pfNotes").value.trim(),
+  };
+
+  localStorage.setItem("medPatient", JSON.stringify(patientProfile));
+  closeModal("patientModal");
+  renderPatientDashboard();
+  showToast("✅ Health profile saved!");
+}
+
+function loadProfileToForm() {
+  if (!patientProfile) return;
+  const set = (id, val) => { if (val && document.getElementById(id)) document.getElementById(id).value = val; };
+  set("pfName",        patientProfile.name);
+  set("pfDob",         patientProfile.dob);
+  set("pfGender",      patientProfile.gender);
+  set("pfBloodGroup",  patientProfile.bloodGroup);
+  set("pfWeight",      patientProfile.weight);
+  set("pfHeight",      patientProfile.height);
+  set("pfBP",          patientProfile.bp);
+  set("pfPulse",       patientProfile.pulse);
+  set("pfSugar",       patientProfile.sugar);
+  set("pfTemp",        patientProfile.temp);
+  set("pfAllergies",   patientProfile.allergies);
+  set("pfConditions",  patientProfile.conditions);
+  set("pfMedicines",   patientProfile.medicines);
+  set("pfNotes",       patientProfile.notes);
+}
+
+/* ===== Classify vitals ===== */
+function bpClass(bp) {
+  if (!bp) return null;
+  const parts = bp.split("/");
+  if (parts.length !== 2) return null;
+  const sys = parseInt(parts[0]), dia = parseInt(parts[1]);
+  if (isNaN(sys) || isNaN(dia)) return null;
+  if (sys < 90  || dia < 60)  return { label: "Low BP",        cls: "warn",   icon: "fa-arrow-down" };
+  if (sys <= 120 && dia <= 80) return { label: "Normal BP",    cls: "",       icon: "fa-check-circle" };
+  if (sys <= 130 && dia <= 80) return { label: "Elevated BP",  cls: "warn",   icon: "fa-arrow-up" };
+  if (sys <= 140 || dia <= 90) return { label: "High BP Stage 1", cls: "warn",icon: "fa-triangle-exclamation" };
+  return { label: "High BP Stage 2", cls: "danger", icon: "fa-circle-exclamation" };
+}
+
+function bmiLabel(bmi) {
+  const b = parseFloat(bmi);
+  if (b < 18.5) return { label: "Underweight", cls: "bmi-under" };
+  if (b < 25)   return { label: "Normal",       cls: "bmi-normal" };
+  if (b < 30)   return { label: "Overweight",   cls: "bmi-over" };
+  return              { label: "Obese",          cls: "bmi-obese" };
+}
+
+function sugarClass(s) {
+  const v = parseInt(s);
+  if (isNaN(v)) return null;
+  if (v < 70)   return { label: "Low Sugar",    cls: "danger" };
+  if (v <= 100) return { label: "Normal Sugar", cls: "" };
+  if (v <= 125) return { label: "Pre-Diabetic", cls: "warn" };
+  return              { label: "High Sugar",     cls: "danger" };
+}
+
+/* ===== Render Patient Dashboard ===== */
+function renderPatientDashboard() {
+  const dash = document.getElementById("patientDashboard");
+  if (!patientProfile || !patientProfile.name) { dash.classList.add("hidden"); return; }
+  dash.classList.remove("hidden");
+
+  const p = patientProfile;
+
+  // Avatar
+  document.getElementById("pdAvatar").textContent = p.name.charAt(0).toUpperCase();
+  document.getElementById("pdName").textContent = p.name;
+
+  // Subtitle
+  const sub = [
+    p.age    ? `${p.age} yrs` : null,
+    p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : null,
+    p.bloodGroup || null,
+  ].filter(Boolean).join(" • ");
+  document.getElementById("pdSub").textContent = sub || "Health Profile";
+
+  // Vitals chips
+  const vitals = [];
+
+  if (p.age) {
+    const ageGroup = p.age < 12 ? "Child" : p.age < 18 ? "Teen" : p.age >= 65 ? "Senior" : "Adult";
+    vitals.push({ icon: "fa-cake-candles", label: "Age", val: `${p.age} yrs (${ageGroup})`, cls: "" });
+  }
+  if (p.weight) vitals.push({ icon: "fa-weight-scale", label: "Weight", val: `${p.weight} kg`, cls: "" });
+  if (p.height) vitals.push({ icon: "fa-ruler-vertical", label: "Height", val: `${p.height} cm`, cls: "" });
+
+  if (p.bmi) {
+    const bl = bmiLabel(p.bmi);
+    vitals.push({ icon: "fa-calculator", label: "BMI", val: `${p.bmi} <span class="bmi-badge ${bl.cls}">${bl.label}</span>`, cls: bl.cls === "bmi-normal" ? "" : "warn" });
+  }
+
+  if (p.bp) {
+    const bc = bpClass(p.bp);
+    vitals.push({ icon: bc?.icon || "fa-heart-pulse", label: "Blood Pressure", val: `${p.bp} mmHg${bc ? ` — ${bc.label}` : ""}`, cls: bc?.cls || "" });
+  }
+
+  if (p.pulse) vitals.push({ icon: "fa-wave-square", label: "Pulse", val: `${p.pulse} bpm`, cls: parseInt(p.pulse) > 100 || parseInt(p.pulse) < 55 ? "warn" : "" });
+
+  if (p.sugar) {
+    const sc = sugarClass(p.sugar);
+    vitals.push({ icon: "fa-droplet", label: "Blood Sugar", val: `${p.sugar} mg/dL${sc ? ` — ${sc.label}` : ""}`, cls: sc?.cls || "" });
+  }
+
+  if (p.temp) {
+    const t = parseFloat(p.temp);
+    const tCls = t > 99.5 ? "warn" : t > 103 ? "danger" : "";
+    vitals.push({ icon: "fa-thermometer", label: "Temperature", val: `${p.temp}°F${t > 99.5 ? " — Fever" : ""}`, cls: tCls });
+  }
+
+  if (p.allergies)  vitals.push({ icon: "fa-ban",        label: "Allergies",   val: p.allergies,  cls: "warn" });
+  if (p.conditions) vitals.push({ icon: "fa-stethoscope", label: "Conditions",  val: p.conditions, cls: "warn" });
+
+  document.getElementById("pdVitals").innerHTML = vitals.map(v =>
+    `<div class="pd-vital-chip ${v.cls}">
+      <i class="fa-solid ${v.icon}"></i>
+      <div><strong>${v.label}</strong><br><span>${v.val}</span></div>
+    </div>`
+  ).join("");
+
+  // Medicines row
+  const medsRow  = document.getElementById("pdMedsRow");
+  const medsList = document.getElementById("pdMedsList");
+  if (p.medicines) {
+    const meds = p.medicines.split(",").map(m => m.trim()).filter(Boolean);
+    medsRow.classList.remove("hidden");
+    medsList.innerHTML = meds.map(m =>
+      `<button class="pop-chip" onclick="quickSearch('${m}')">💊 ${m}</button>`
+    ).join("");
+  } else {
+    medsRow.classList.add("hidden");
+  }
+}
+
+/* ===== Patient Alert on Search Results ===== */
+function renderPatientAlert(medName, results) {
+  const alertEl = document.getElementById("patientAlert");
+  alertEl.className = "patient-alert hidden";
+  alertEl.innerHTML = "";
+  if (!patientProfile || !patientProfile.name) return;
+
+  const p       = patientProfile;
+  const d       = results[0];
+  const warnings = (d.warnings?.[0] || d.warnings_and_cautions?.[0] || "").toLowerCase();
+  const preg     = (d.pregnancy?.[0] || "").toLowerCase();
+  const ped      = (d.pediatric_use?.[0] || "").toLowerCase();
+  const ger      = (d.geriatric_use?.[0] || "").toLowerCase();
+  const contra   = (d.contraindications?.[0] || "").toLowerCase();
+
+  const alerts  = [];
+  const dangers = [];
+  const infos   = [];
+
+  // Age-based alerts
+  if (p.age) {
+    if (p.age < 12 && ped && /not recommended|contraindicated|avoid|do not use/i.test(ped)) {
+      dangers.push(`⚠️ <strong>Pediatric Warning:</strong> This medicine may not be recommended for children under 12. Consult a paediatrician.`);
+    }
+    if (p.age >= 65 && ger) {
+      alerts.push(`👴 <strong>Geriatric Note (Age ${p.age}):</strong> Older adults may require dose adjustments. Check with your doctor.`);
+    }
+    if (p.age < 18) {
+      infos.push(`🧒 <strong>Minor Patient:</strong> Always have a guardian present and consult a doctor before administering this medicine.`);
+    }
+  }
+
+  // Gender-based alerts
+  if (p.gender === "female" && preg && /pregnancy|pregnant|lactation|nursing|breast/i.test(preg)) {
+    alerts.push(`🤰 <strong>Pregnancy / Lactation Alert:</strong> This medicine has specific notes for female patients. Review the Pregnancy & Lactation section carefully.`);
+  }
+
+  // Blood pressure alerts
+  if (p.bp) {
+    const bc = bpClass(p.bp);
+    if (bc && (bc.cls === "warn" || bc.cls === "danger")) {
+      const bpKeywords = /blood pressure|hypertension|hypotension|cardiovascular/i;
+      if (bpKeywords.test(warnings) || bpKeywords.test(contra)) {
+        dangers.push(`❤️ <strong>Blood Pressure Alert (Your BP: ${p.bp} — ${bc.label}):</strong> This medicine may interact with blood pressure conditions. Consult your doctor.`);
+      }
+    }
+  }
+
+  // Allergy cross-check
+  if (p.allergies) {
+    const allergyList = p.allergies.split(",").map(a => a.trim().toLowerCase());
+    const medLower    = medName.toLowerCase();
+    allergyList.forEach(allergy => {
+      if (allergy && medLower.includes(allergy)) {
+        dangers.push(`🚨 <strong>Allergy Alert:</strong> You have listed "<strong>${allergy}</strong>" as an allergy — this may conflict with ${medName}. Do NOT take without consulting a doctor.`);
+      }
+    });
+  }
+
+  // Blood sugar / diabetes
+  if (p.sugar && parseInt(p.sugar) > 125) {
+    if (/diabetes|glucose|glycemia|insulin/i.test(warnings + contra)) {
+      alerts.push(`🩸 <strong>Diabetic Alert (Sugar: ${p.sugar} mg/dL):</strong> This medicine has notes relating to blood sugar. Monitor levels closely.`);
+    }
+  }
+
+  // Current medicines interaction hint
+  if (p.medicines) {
+    const currentMeds = p.medicines.split(",").map(m => m.trim().toLowerCase());
+    const drugInt = (d.drug_interactions?.[0] || "").toLowerCase();
+    const matchedMeds = currentMeds.filter(cm => cm && drugInt.includes(cm));
+    if (matchedMeds.length > 0) {
+      dangers.push(`💊 <strong>Possible Drug Interaction:</strong> You are currently taking <strong>${matchedMeds.join(", ")}</strong> which may interact with ${medName}. Review the Drug Interactions section.`);
+    }
+    infos.push(`📋 <strong>Your Current Medicines:</strong> ${p.medicines}`);
+  }
+
+  // BMI note
+  if (p.bmi) {
+    const bl = bmiLabel(p.bmi);
+    if (bl.label !== "Normal") {
+      infos.push(`⚖️ <strong>BMI Note (${p.bmi} — ${bl.label}):</strong> Dosage recommendations may vary based on body weight. Verify with your physician.`);
+    }
+  }
+
+  const allAlerts = [...dangers, ...alerts, ...infos];
+  if (!allAlerts.length) {
+    alertEl.className = "patient-alert alert-info";
+    alertEl.innerHTML = `<div class="pa-title"><i class="fa-solid fa-user-check"></i> Personalised Check for ${p.name}</div>
+      <p>✅ No specific alerts found for your profile with this medicine. Always consult your doctor before use.</p>`;
+    alertEl.classList.remove("hidden");
+    return;
+  }
+
+  const mainCls = dangers.length ? "alert-danger" : alerts.length ? "alert-warning" : "alert-info";
+  alertEl.className = `patient-alert ${mainCls}`;
+  alertEl.innerHTML = `
+    <div class="pa-title"><i class="fa-solid fa-user-shield"></i> Personalised Alerts for ${p.name} (Age: ${p.age || "N/A"}, ${p.gender || ""})</div>
+    <ul>${allAlerts.map(a => `<li>${a}</li>`).join("")}</ul>`;
+  alertEl.classList.remove("hidden");
+}
+
+// Hook into renderData to show patient alert
+const _origRenderData = renderData;
+// Override renderData to also call renderPatientAlert after rendering
+const renderDataWithPatient = function(results) {
+  _origRenderData(results);
+  const generic = (results[0]?.openfda?.generic_name?.[0] || "this medicine");
+  renderPatientAlert(generic, results);
+};
+
+// Patch the searchMedicine call to use the wrapped version
+window.renderDataHook = renderDataWithPatient;
+
+// Override openModal to pre-fill form
+const _origOpen = openModal;
+function openModal(id) {
+  _origOpen(id);
+  if (id === "patientModal") loadProfileToForm();
+}
+
+// Init on page load
+renderPatientDashboard();
