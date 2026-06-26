@@ -123,11 +123,7 @@
       <div class="medicine-header">
         <div class="med-title-group">
           <h2 id="medName"></h2>
-          <div class="badges">
-            <span id="medBrand"   class="badge brand-badge"></span>
-            <span id="rxBadge"    class="badge rx-badge"></span>
-            <span id="routeBadge" class="badge route-badge"></span>
-          </div>
+          <div class="badges" id="badgesRow"></div>
         </div>
         <div class="header-actions">
           <button class="action-btn" id="favBtn" onclick="toggleFavourite()" title="Favourite"><i class="fa-regular fa-star"></i></button>
@@ -141,16 +137,16 @@
           </div>
         </div>
       </div>
-      <div class="cards-grid">
-        <div class="card card-blue"   style="--i:0"><div class="card-header"><h3><i class="fa-solid fa-circle-info"></i> Purpose / Uses</h3><button class="copy-btn" onclick="copyCard('purpose')"><i class="fa-regular fa-copy"></i></button></div><p id="purpose"></p></div>
-        <div class="card card-green"  style="--i:1"><div class="card-header"><h3><i class="fa-solid fa-pills"></i> Dosage & Administration</h3><button class="copy-btn" onclick="copyCard('dosage')"><i class="fa-regular fa-copy"></i></button></div><p id="dosage"></p></div>
-        <div class="card card-orange" style="--i:2"><div class="card-header"><h3><i class="fa-solid fa-triangle-exclamation"></i> Warnings</h3><button class="copy-btn" onclick="copyCard('warnings')"><i class="fa-regular fa-copy"></i></button></div><p id="warnings"></p></div>
-        <div class="card card-red"    style="--i:3"><div class="card-header"><h3><i class="fa-solid fa-virus-slash"></i> Side Effects</h3><button class="copy-btn" onclick="copyCard('sideEffects')"><i class="fa-regular fa-copy"></i></button></div><p id="sideEffects"></p></div>
-        <div class="card card-purple" style="--i:4"><div class="card-header"><h3><i class="fa-solid fa-ban"></i> Contraindications</h3><button class="copy-btn" onclick="copyCard('contraindications')"><i class="fa-regular fa-copy"></i></button></div><p id="contraindications"></p></div>
-        <div class="card card-teal"   style="--i:5"><div class="card-header"><h3><i class="fa-solid fa-shield-halved"></i> Precautions</h3><button class="copy-btn" onclick="copyCard('precautions')"><i class="fa-regular fa-copy"></i></button></div><p id="precautions"></p></div>
-        <div class="card card-blue"   style="--i:6"><div class="card-header"><h3><i class="fa-solid fa-boxes-stacked"></i> Storage</h3><button class="copy-btn" onclick="copyCard('storage')"><i class="fa-regular fa-copy"></i></button></div><p id="storage"></p></div>
-        <div class="card card-green"  style="--i:7"><div class="card-header"><h3><i class="fa-solid fa-user-doctor"></i> Manufacturer</h3><button class="copy-btn" onclick="copyCard('manufacturer')"><i class="fa-regular fa-copy"></i></button></div><p id="manufacturer"></p></div>
-      </div>
+
+      <!-- Meta info strip -->
+      <div id="metaStrip" class="meta-strip"></div>
+
+      <!-- Field count info -->
+      <div id="fieldCount" class="field-count-bar"></div>
+
+      <!-- Dynamic cards injected by JS -->
+      <div id="dynamicCards" class="cards-grid"></div>
+
       <div class="disclaimer">
         <i class="fa-solid fa-stethoscope"></i>
         Sourced from <strong>U.S. FDA OpenData</strong>. For <strong>educational purposes only</strong>. Always consult a licensed physician.

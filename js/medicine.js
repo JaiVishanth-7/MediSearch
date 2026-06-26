@@ -51,9 +51,31 @@ function toggleTheme() {
 
 /* ===== Helpers ===== */
 function clean(text) {
-  if (!text) return "Not available";
-  return (Array.isArray(text) ? text[0] : String(text)).replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const val = (Array.isArray(text) ? text[0] : String(text)).replace(/\s+/g, " ").trim();
+  return val.length > 0 ? val : null;
 }
+
+// Merge field: pick first non-null value across multiple result objects
+function merge(results, ...keys) {
+  for (const r of results) {
+    for (const k of keys) {
+      const v = clean(r[k]);
+      if (v) return v;
+    }
+  }
+  return null;
+}
+
+// Merge openfda field
+function mergeOFDA(results, key) {
+  for (const r of results) {
+    const v = r.openfda?.[key]?.[0];
+    if (v) return v;
+  }
+  return null;
+}
+
 function show(id, value) { document.getElementById(id).textContent = clean(value); }
 
 /* ===== History ===== */
@@ -105,12 +127,13 @@ function toggleFavourite() {
 /* ===== Safety Score ===== */
 function calcSafety(d) {
   let score = 100;
-  if (d.boxed_warning)     score -= 40;
-  if (d.warnings)          score -= 20;
-  if (d.contraindications) score -= 15;
-  if (d.adverse_reactions) score -= 10;
+  if (d.boxed_warning)             score -= 40;
+  if (d.warnings)                  score -= 15;
+  if (d.contraindications)         score -= 10;
+  if (d.adverse_reactions)         score -= 10;
+  if (d.drug_abuse_and_dependence) score -= 10;
+  if (d.drug_interactions)         score -= 5;
   score = Math.max(score, 10);
-
   const fill = document.getElementById("safetyFill");
   const text = document.getElementById("safetyText");
   fill.style.width = "0%";
@@ -121,21 +144,21 @@ function calcSafety(d) {
   else                  { fill.classList.add("low");      text.textContent = `High Risk – Consult Doctor (${score}%)`; }
 }
 
-/* ===== Copy ===== */
-function copyCard(id) {
-  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => showToast("✅ Copied to clipboard!"));
+/* ===== Copy Dynamic Card ===== */
+function copyDynCard(id) {
+  const el = document.getElementById(id);
+  if (el) navigator.clipboard.writeText(el.textContent).then(() => showToast("✅ Copied to clipboard!"));
 }
 
 /* ===== Text to Speech ===== */
 function speakMedicine() {
   if (!('speechSynthesis' in window)) { showToast("❌ TTS not supported in this browser"); return; }
   window.speechSynthesis.cancel();
-  const fields = ["purpose","dosage","warnings","sideEffects","contraindications","precautions"];
-  const labels = ["Purpose","Dosage","Warnings","Side Effects","Contraindications","Precautions"];
   let text = `Medicine: ${currentMedName}. `;
-  fields.forEach((f, i) => {
-    const val = document.getElementById(f).textContent;
-    if (val && val !== "Not available") text += `${labels[i]}: ${val}. `;
+  document.querySelectorAll("#dynamicCards .card p").forEach(p => {
+    const heading = p.closest(".card").querySelector("h3")?.textContent?.trim() || "";
+    const val = p.textContent.trim();
+    if (val) text += `${heading}: ${val.substring(0, 300)}. `;
   });
   const utter = new SpeechSynthesisUtterance(text);
   utter.rate = 0.9;
@@ -269,13 +292,13 @@ async function searchMedicine() {
   loader.classList.remove("hidden");
 
   try {
-    let result = await fetchFDA(`openfda.brand_name:"${query}"`);
-    if (!result) result = await fetchFDA(`openfda.generic_name:"${query}"`);
-    if (!result) result = await fetchFDA(query);
-    if (!result) throw new Error(`No results for "${query}". Try: Ibuprofen, Aspirin, Metformin`);
+    let results = await fetchFDA(`openfda.brand_name:"${query}"`);
+    if (!results) results = await fetchFDA(`openfda.generic_name:"${query}"`);
+    if (!results) results = await fetchFDA(query);
+    if (!results) throw new Error(`No results for "${query}". Try: Ibuprofen, Aspirin, Metformin`);
 
     saveHistory(query);
-    renderData(result);
+    renderData(results);
 
   } catch (err) {
     errorText.textContent = err.message;
@@ -288,9 +311,9 @@ async function searchMedicine() {
 
 async function fetchFDA(term) {
   try {
-    const res = await fetch(`${FDA_URL}?search=${encodeURIComponent(term)}&limit=1`);
+    const res = await fetch(`${FDA_URL}?search=${encodeURIComponent(term)}&limit=5`);
     const data = await res.json();
-    return data.results?.[0] || null;
+    return data.results || null;
   } catch { return null; }
 }
 
@@ -299,49 +322,120 @@ function quickSearch(name) {
   searchMedicine();
 }
 
+/* ===== ALL FDA FIELD DEFINITIONS ===== */
+const FIELD_DEFS = [
+  // id, label, icon, color-class, keys[]
+  ["purpose",            "Purpose / Uses",                 "fa-circle-info",          "card-blue",   ["purpose","indications_and_usage"]],
+  ["dosage",             "Dosage & Administration",         "fa-pills",                "card-green",  ["dosage_and_administration"]],
+  ["warnings",           "Warnings",                        "fa-triangle-exclamation", "card-orange", ["warnings","warnings_and_cautions"]],
+  ["boxed_warning",      "Boxed Warning",                   "fa-skull-crossbones",     "card-red",    ["boxed_warning"]],
+  ["sideEffects",        "Adverse Reactions / Side Effects","fa-virus-slash",          "card-red",    ["adverse_reactions","side_effects"]],
+  ["contraindications",  "Contraindications",               "fa-ban",                  "card-purple", ["contraindications"]],
+  ["drugInteractions",   "Drug Interactions",               "fa-capsules",             "card-orange", ["drug_interactions"]],
+  ["precautions",        "Precautions",                     "fa-shield-halved",        "card-teal",   ["precautions","general_precautions"]],
+  ["pregnancy",          "Pregnancy & Lactation",           "fa-person-pregnant",      "card-purple", ["pregnancy","nursing_mothers","pregnancy_or_breast_feeding"]],
+  ["pediatric",          "Pediatric Use",                   "fa-child",                "card-teal",   ["pediatric_use"]],
+  ["geriatric",          "Geriatric Use",                   "fa-person-cane",          "card-blue",   ["geriatric_use"]],
+  ["overdosage",         "Overdosage",                      "fa-circle-exclamation",   "card-red",    ["overdosage"]],
+  ["drugAbuse",          "Drug Abuse & Dependence",         "fa-biohazard",            "card-orange", ["drug_abuse_and_dependence","controlled_substance","abuse","dependence"]],
+  ["clinicalPharm",      "Clinical Pharmacology",           "fa-flask",                "card-blue",   ["clinical_pharmacology","clinical_pharmacology_and_pharmacokinetics"]],
+  ["mechanism",          "Mechanism of Action",             "fa-atom",                 "card-green",  ["mechanism_of_action"]],
+  ["pharmacokinetics",   "Pharmacokinetics",                "fa-chart-line",           "card-teal",   ["pharmacokinetics"]],
+  ["pharmacodynamics",   "Pharmacodynamics",                "fa-wave-square",          "card-purple", ["pharmacodynamics"]],
+  ["activeIngredients",  "Active Ingredients",              "fa-vial",                 "card-green",  ["active_ingredient"]],
+  ["inactiveIngredients","Inactive Ingredients",            "fa-vial-circle-check",    "card-blue",   ["inactive_ingredient"]],
+  ["description",        "Drug Description",                "fa-file-medical",         "card-teal",   ["description"]],
+  ["clinicalStudies",    "Clinical Studies",                "fa-microscope",           "card-purple", ["clinical_studies"]],
+  ["animalPharm",        "Animal Pharmacology",             "fa-paw",                  "card-blue",   ["animal_pharmacology_and_or_toxicology"]],
+  ["howSupplied",        "How Supplied",                    "fa-box",                  "card-green",  ["how_supplied","how_supplied_storage_and_handling"]],
+  ["storage",            "Storage & Handling",              "fa-boxes-stacked",        "card-blue",   ["storage_and_handling"]],
+  ["patientInfo",        "Patient Information",             "fa-user-injured",         "card-teal",   ["patient_medication_information","spl_patient_package_insert","information_for_patients","information_for_patient_caregivers"]],
+  ["labeling",           "Instructions for Use",            "fa-list-check",           "card-green",  ["instructions_for_use","spl_medguide"]],
+  ["recentChanges",      "Recent Label Changes",            "fa-rotate",               "card-orange", ["recent_major_changes"]],
+  ["references",         "References",                      "fa-book-medical",         "card-purple", ["references"]],
+  ["manufacturer",       "Manufacturer",                    "fa-user-doctor",          "card-green",  ["_openfda_manufacturer"]],
+];
+
 /* ===== Render ===== */
-function renderData(d) {
-  const openfda = d.openfda || {};
-  const generic = openfda.generic_name?.[0] || "Unknown Medicine";
-  const brand   = openfda.brand_name?.[0]   || "";
-  const rx      = openfda.product_type?.[0] || "";
-  const route   = openfda.route?.[0]        || "";
+function renderData(results) {
+  const first   = results[0];
+  const openfda = first.openfda || {};
+
+  const generic = mergeOFDA(results, "generic_name")  || "Unknown Medicine";
+  const brand   = mergeOFDA(results, "brand_name")    || "";
+  const rx      = mergeOFDA(results, "product_type")  || "";
+  const route   = mergeOFDA(results, "route")         || "";
+  const ndc     = mergeOFDA(results, "product_ndc")   || "";
+  const substance = mergeOFDA(results, "substance_name") || "";
+  const mfr     = mergeOFDA(results, "manufacturer_name") || "";
+  const appNo   = mergeOFDA(results, "application_number") || "";
+  const pharmClass = mergeOFDA(results, "pharm_class_epc") || mergeOFDA(results, "pharm_class_moa") || "";
 
   currentMedName = generic;
   document.getElementById("medName").textContent = generic.toUpperCase();
 
-  const bb = document.getElementById("medBrand");
-  bb.textContent = brand;
-  bb.classList.toggle("hidden", !brand);
-
-  const rb = document.getElementById("rxBadge");
-  rb.textContent = rx;
-  rb.classList.toggle("hidden", !rx);
-
-  const rtb = document.getElementById("routeBadge");
-  rtb.textContent = route;
-  rtb.classList.toggle("hidden", !route);
+  // Badges
+  const badgesRow = document.getElementById("badgesRow");
+  badgesRow.innerHTML = [
+    brand      ? `<span class="badge brand-badge">${brand}</span>` : "",
+    rx         ? `<span class="badge rx-badge">${rx}</span>` : "",
+    route      ? `<span class="badge route-badge">${route}</span>` : "",
+    pharmClass ? `<span class="badge pharm-badge">${pharmClass}</span>` : "",
+  ].join("");
 
   // Favourite state
   const favBtn = document.getElementById("favBtn");
-  if (favourites.includes(generic)) {
-    favBtn.classList.add("fav-active");
-    favBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
-  } else {
-    favBtn.classList.remove("fav-active");
-    favBtn.innerHTML = '<i class="fa-regular fa-star"></i>';
-  }
+  favBtn.className = "action-btn" + (favourites.includes(generic) ? " fav-active" : "");
+  favBtn.innerHTML = favourites.includes(generic)
+    ? '<i class="fa-solid fa-star"></i>'
+    : '<i class="fa-regular fa-star"></i>';
 
-  show("purpose",           d.purpose || d.indications_and_usage);
-  show("dosage",            d.dosage_and_administration);
-  show("warnings",          d.warnings || d.warnings_and_cautions || d.boxed_warning);
-  show("sideEffects",       d.adverse_reactions || d.side_effects);
-  show("contraindications", d.contraindications);
-  show("precautions",       d.precautions || d.use_in_specific_populations);
-  show("storage",           d.storage_and_handling || d.how_supplied_storage_and_handling);
-  show("manufacturer",      openfda.manufacturer_name?.[0] || "Not available");
+  // Meta strip
+  const metaItems = [
+    mfr      && { icon: "fa-industry",        label: "Manufacturer", val: mfr },
+    ndc      && { icon: "fa-barcode",          label: "NDC",          val: ndc },
+    substance && { icon: "fa-atom",            label: "Substance",    val: substance },
+    appNo    && { icon: "fa-file-signature",   label: "App No.",      val: appNo },
+  ].filter(Boolean);
 
-  calcSafety(d);
+  document.getElementById("metaStrip").innerHTML = metaItems.map(m =>
+    `<div class="meta-item"><i class="fa-solid ${m.icon}"></i><strong>${m.label}:</strong> ${m.val}</div>`
+  ).join("");
+
+  // Build dynamic cards — only render fields that have data
+  const colors = ["card-blue","card-green","card-orange","card-red","card-purple","card-teal"];
+  const cardsEl = document.getElementById("dynamicCards");
+  cardsEl.innerHTML = "";
+
+  let cardCount = 0;
+  FIELD_DEFS.forEach(([id, label, icon, colorClass, keys]) => {
+    let value;
+    if (id === "manufacturer") {
+      value = mfr || null;
+    } else {
+      value = merge(results, ...keys);
+    }
+    if (!value) return; // skip — no data, no card
+
+    const color = colorClass || colors[cardCount % colors.length];
+    const safeId = `dyn_${id}`;
+    const card = document.createElement("div");
+    card.className = `card ${color}`;
+    card.style = `--i:${cardCount}`;
+    card.innerHTML = `
+      <div class="card-header">
+        <h3><i class="fa-solid ${icon}"></i> ${label}</h3>
+        <button class="copy-btn" onclick="copyDynCard('${safeId}')" title="Copy"><i class="fa-regular fa-copy"></i></button>
+      </div>
+      <p id="${safeId}">${value}</p>`;
+    cardsEl.appendChild(card);
+    cardCount++;
+  });
+
+  document.getElementById("fieldCount").innerHTML =
+    `<i class="fa-solid fa-circle-check"></i> ${cardCount} information fields found for this medicine.`;
+
+  calcSafety(first);
   document.getElementById("results").classList.remove("hidden");
 }
 
