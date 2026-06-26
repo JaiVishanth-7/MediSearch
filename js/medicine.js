@@ -440,17 +440,24 @@ function renderData(results) {
 
   calcSafety(first);
   document.getElementById("results").classList.remove("hidden");
+  smoothScrollToResults();
 }
 
 /* ===== MODAL SYSTEM ===== */
 function openModal(id) {
   document.getElementById(id).classList.remove("hidden");
-  document.body.style.overflow = "hidden";
+  // measure scrollbar width to prevent layout shift
+  const sw = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty("--scrollbar-width", sw + "px");
+  document.body.classList.add("modal-open");
   if (id === "patientModal") loadProfileToForm();
 }
 function closeModal(id) {
   document.getElementById(id).classList.add("hidden");
-  document.body.style.overflow = "";
+  // only remove modal-open if no other modals are open
+  const anyOpen = ["loginModal","registerModal","aboutModal","termsModal","supportModal","patientModal"]
+    .some(mid => !document.getElementById(mid)?.classList.contains("hidden"));
+  if (!anyOpen) document.body.classList.remove("modal-open");
 }
 function closeOnOverlay(e, id) {
   if (e.target === e.currentTarget) closeModal(id);
@@ -461,8 +468,7 @@ function switchModal(closeId, openId) {
 }
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") {
-    ["loginModal","registerModal","aboutModal","termsModal","supportModal"].forEach(closeModal);
-    document.body.style.overflow = "";
+    ["loginModal","registerModal","aboutModal","termsModal","supportModal","patientModal"].forEach(closeModal);
   }
 });
 
@@ -827,3 +833,32 @@ function renderPatientAlert(medName, results) {
 
 // Init on page load
 renderPatientDashboard();
+
+/* ===== SCROLL PROGRESS BAR + BACK TO TOP ===== */
+const scrollBar = document.getElementById("scrollProgress");
+const backToTopBtn = document.getElementById("backToTop");
+
+window.addEventListener("scroll", () => {
+  const scrollTop    = window.scrollY || document.documentElement.scrollTop;
+  const docHeight    = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPct    = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+  // Progress bar
+  if (scrollBar) scrollBar.style.width = scrollPct + "%";
+
+  // Back to top visibility
+  if (backToTopBtn) {
+    if (scrollTop > 320) backToTopBtn.classList.add("visible");
+    else                 backToTopBtn.classList.remove("visible");
+  }
+}, { passive: true });
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// Smooth scroll to results after search
+function smoothScrollToResults() {
+  const el = document.getElementById("results");
+  if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+}

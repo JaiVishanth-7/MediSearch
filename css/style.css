@@ -22,8 +22,29 @@
   --loader-track: #2d3748;
 }
 
+/* ===== BASE SCROLL SETUP ===== */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-body { background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+  overflow-y: scroll; /* always show scrollbar to prevent layout shift */
+}
+
+/* ===== CUSTOM SCROLLBAR — entire page ===== */
+body::-webkit-scrollbar              { width: 8px; }
+body::-webkit-scrollbar-track        { background: var(--bg); }
+body::-webkit-scrollbar-thumb        { background: #2b6cb0; border-radius: 10px; }
+body::-webkit-scrollbar-thumb:hover  { background: #1a365d; }
+[data-theme="dark"] body::-webkit-scrollbar-thumb { background: #3182ce; }
 
 /* ===== Theme Toggle ===== */
 .theme-toggle {
@@ -307,7 +328,20 @@ main { max-width: 1060px; margin: -10px auto 0; padding: 0 20px 40px; position: 
 .card-red    h3 i { color: #e53e3e; }
 .card-purple h3 i { color: #6b46c1; }
 .card-teal   h3 i { color: #319795; }
-.card p { font-size: 0.88rem; color: var(--subtext); line-height: 1.75; max-height: 160px; overflow-y: auto; scrollbar-width: thin; }
+/* Card inner paragraph — smooth scroll, styled scrollbar */
+.card p {
+  font-size: 0.88rem; color: var(--subtext); line-height: 1.75;
+  max-height: 160px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #3182ce transparent;
+  padding-right: 4px;
+}
+.card p::-webkit-scrollbar              { width: 4px; }
+.card p::-webkit-scrollbar-thumb        { background: #3182ce; border-radius: 10px; }
+.card p::-webkit-scrollbar-track        { background: transparent; }
 .copy-btn {
   background: none; border: 1px solid var(--border); border-radius: 8px;
   padding: 4px 8px; cursor: pointer; color: var(--subtext);
@@ -488,7 +522,7 @@ footer {
 .footer-bottom a { color: #63b3ed; text-decoration: none; }
 .footer-disclaimer { margin-top: 6px; color: #64748b; font-size: 0.78rem; }
 
-/* ===== MODAL OVERLAY ===== */
+/* ===== MODAL OVERLAY — fixed, never blocks body scroll ===== */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.55);
@@ -496,15 +530,25 @@ footer {
   display: flex; align-items: center; justify-content: center;
   z-index: 1000; padding: 20px;
   animation: fadeIn 0.2s ease;
+  overflow-y: auto; /* overlay itself scrollable if modal is tall */
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Modal inner scroll — smooth, styled scrollbar */
 .modal {
   background: var(--surface); border-radius: 24px;
   padding: 40px 36px; width: 100%; max-width: 460px;
   position: relative; text-align: center;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   animation: modalPop 0.25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #2b6cb0 transparent;
 }
+.modal::-webkit-scrollbar              { width: 5px; }
+.modal::-webkit-scrollbar-thumb        { background: #2b6cb0; border-radius: 10px; }
+.modal::-webkit-scrollbar-track        { background: transparent; }
 .modal-wide { max-width: 640px; text-align: left; }
 @keyframes modalPop {
   from { opacity: 0; transform: scale(0.93) translateY(10px); }
@@ -576,7 +620,20 @@ footer {
 .modal-content-body { color: var(--subtext); font-size: 0.9rem; line-height: 1.75; }
 .modal-content-body p { margin-bottom: 12px; }
 .modal-content-body h4 { color: var(--text); font-size: 0.95rem; margin: 18px 0 6px; }
-.scrollable { max-height: 420px; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; }
+/* Scrollable modal content body */
+.scrollable {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #6b46c1 transparent;
+  overscroll-behavior: contain;
+}
+.scrollable::-webkit-scrollbar              { width: 5px; }
+.scrollable::-webkit-scrollbar-thumb        { background: #6b46c1; border-radius: 10px; }
+.scrollable::-webkit-scrollbar-track        { background: transparent; }
 .terms-date { font-size: 0.8rem; color: var(--subtext); margin-bottom: 16px; }
 
 /* About Grid */
@@ -787,4 +844,52 @@ footer {
   .pf-grid { grid-template-columns: 1fr; }
   .pd-header { flex-direction: column; align-items: flex-start; }
   .pd-edit-btn { margin-left: 0; }
+}
+
+/* ===== SCROLL PROGRESS BAR ===== */
+#scrollProgress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, #2b6cb0, #e94560, #38a169);
+  z-index: 9999;
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ===== BACK TO TOP BUTTON ===== */
+#backToTop {
+  position: fixed;
+  bottom: 80px;
+  right: 22px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2b6cb0, #3182ce);
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(43,108,176,0.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transform: translateY(16px) scale(0.85);
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 990;
+  pointer-events: none;
+}
+#backToTop.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+#backToTop:hover {
+  background: linear-gradient(135deg, #1a365d, #2b6cb0);
+  transform: translateY(-3px) scale(1.08);
+}
+
+/* body.modal-open prevents scroll without layout shift */
+body.modal-open {
+  overflow: hidden;
+  padding-right: var(--scrollbar-width, 8px); /* prevent layout shift */
 }
