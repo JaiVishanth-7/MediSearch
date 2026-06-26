@@ -299,7 +299,9 @@ async function searchMedicine() {
     if (!results) throw new Error(`No results for "${query}". Try: Ibuprofen, Aspirin, Metformin`);
 
     saveHistory(query);
-    (window.renderDataHook || renderData)(results);
+    renderData(results);
+    const generic = (results[0]?.openfda?.generic_name?.[0] || "this medicine");
+    renderPatientAlert(generic, results);
 
   } catch (err) {
     errorText.textContent = err.message;
@@ -444,6 +446,7 @@ function renderData(results) {
 function openModal(id) {
   document.getElementById(id).classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  if (id === "patientModal") loadProfileToForm();
 }
 function closeModal(id) {
   document.getElementById(id).classList.add("hidden");
@@ -820,25 +823,6 @@ function renderPatientAlert(medName, results) {
     <div class="pa-title"><i class="fa-solid fa-user-shield"></i> Personalised Alerts for ${p.name} (Age: ${p.age || "N/A"}, ${p.gender || ""})</div>
     <ul>${allAlerts.map(a => `<li>${a}</li>`).join("")}</ul>`;
   alertEl.classList.remove("hidden");
-}
-
-// Hook into renderData to show patient alert
-const _origRenderData = renderData;
-// Override renderData to also call renderPatientAlert after rendering
-const renderDataWithPatient = function(results) {
-  _origRenderData(results);
-  const generic = (results[0]?.openfda?.generic_name?.[0] || "this medicine");
-  renderPatientAlert(generic, results);
-};
-
-// Patch the searchMedicine call to use the wrapped version
-window.renderDataHook = renderDataWithPatient;
-
-// Override openModal to pre-fill form
-const _origOpen = openModal;
-function openModal(id) {
-  _origOpen(id);
-  if (id === "patientModal") loadProfileToForm();
 }
 
 // Init on page load
