@@ -1,6 +1,11 @@
+node_modules/
+**/node_modules/
+
+dist/
+**/dist/
+
 .env
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-node_modules
+.env.*
+!.env.example
+
+desktop.ini
